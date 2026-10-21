@@ -10,7 +10,10 @@ def est_repete(sig: Signal, vus: set) -> bool:
 
 
 def compter_incidents(sig: Signal, compteur: dict) -> int:
-    raise NotImplementedError
+    if sig.categorie != "JOURNAL" or sig.gravite not in ("MAJEUR", "BLOQUANT"):
+        return 0
+    compteur[sig.service] = compteur.get(sig.service, 0) + 1
+    return compteur[sig.service]
 
 
 def chercher_fiches(sig: Signal, base: dict) -> list:

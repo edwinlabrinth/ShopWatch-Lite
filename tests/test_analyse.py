@@ -22,6 +22,29 @@ class TestAnalyse(unittest.TestCase):
         self.assertFalse(est_repete(sig(date="2026-11-27T17:02:11Z"), vus))
         self.assertFalse(est_repete(sig(date="2026-11-27T17:02:12Z"), vus))
 
+    def test_compter_incidents_majeur_et_bloquant(self):
+        compteur = {}
+        self.assertEqual(compter_incidents(sig(gravite="MAJEUR"), compteur), 1)
+        self.assertEqual(compter_incidents(sig(gravite="BLOQUANT"), compteur), 2)
+        self.assertEqual(compteur, {"paiement": 2})
+
+    def test_compter_incidents_par_service(self):
+        compteur = {}
+        compter_incidents(sig(service="paiement"), compteur)
+        self.assertEqual(compter_incidents(sig(service="panier"), compteur), 1)
+        self.assertEqual(compteur, {"paiement": 1, "panier": 1})
+
+    def test_compter_incidents_ignore_gravite_faible(self):
+        compteur = {}
+        self.assertEqual(compter_incidents(sig(gravite="MODERE"), compteur), 0)
+        self.assertEqual(compter_incidents(sig(gravite="MINEUR"), compteur), 0)
+        self.assertEqual(compteur, {})
+
+    def test_compter_incidents_ignore_hors_journal(self):
+        compteur = {}
+        self.assertEqual(compter_incidents(sig(categorie="FAILLE", gravite="BLOQUANT"), compteur), 0)
+        self.assertEqual(compteur, {})
+
 
 if __name__ == "__main__":
     unittest.main()
