@@ -45,6 +45,18 @@ class TestAnalyse(unittest.TestCase):
         self.assertEqual(compter_incidents(sig(categorie="FAILLE", gravite="BLOQUANT"), compteur), 0)
         self.assertEqual(compteur, {})
 
+    def test_chercher_fiches_casse_ignoree(self):
+        self.assertEqual(chercher_fiches(sig(texte="TIMEOUT passerelle"), FICHES),
+                         [FICHES["timeout"]])
+
+    def test_chercher_fiches_ordre_de_la_base(self):
+        base = {"build": "conseil build", "timeout": "conseil timeout"}
+        self.assertEqual(chercher_fiches(sig(texte="timeout pendant le build"), base),
+                         ["conseil build", "conseil timeout"])
+
+    def test_chercher_fiches_aucune(self):
+        self.assertEqual(chercher_fiches(sig(texte="Service demarre"), FICHES), [])
+
 
 if __name__ == "__main__":
     unittest.main()
