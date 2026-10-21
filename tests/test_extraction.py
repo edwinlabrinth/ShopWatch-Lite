@@ -1,8 +1,10 @@
 import unittest
 
-from src.extraction import lire_journal, masquer_donnees
+from src.extraction import lire_journal, lire_scan, masquer_donnees
 
 LIGNE = "2026-11-27 17:02:11 paiement ERROR timeout passerelle apres 30s card=4970123412341234"
+RAPPORT_SCAN = {"id_faille": "CVE-2026-7788", "paquet": "lib-panier",
+                "risque": "critique", "date": "2026-11-27T17:09:00Z"}
 
 
 class TestExtraction(unittest.TestCase):
@@ -53,6 +55,31 @@ class TestExtraction(unittest.TestCase):
     def test_lire_journal_ligne_incomplete(self):
         with self.assertRaises(ValueError):
             lire_journal("2026-11-27 17:02:11 paiement ERROR", 1)
+
+    def test_lire_scan(self):
+        sig = lire_scan(RAPPORT_SCAN, 9)
+        self.assertEqual(sig.ref, "SH-0009")
+        self.assertEqual(sig.date, "2026-11-27T17:09:00Z")
+        self.assertEqual(sig.origine, "SCANNER")
+        self.assertEqual(sig.service, "lib-panier")
+        self.assertEqual(sig.env, "production")
+        self.assertEqual(sig.categorie, "FAILLE")
+        self.assertEqual(sig.gravite, "BLOQUANT")
+        self.assertEqual(sig.texte, "Faille CVE-2026-7788 dans lib-panier")
+
+    def test_lire_scan_gravites(self):
+        attendus = (("critique", "BLOQUANT"), ("haut", "MAJEUR"),
+                    ("moyen", "MODERE"), ("faible", "MINEUR"))
+        for risque, attendu in attendus:
+            rapport = dict(RAPPORT_SCAN, risque=risque)
+            self.assertEqual(lire_scan(rapport, 9).gravite, attendu)
+
+    def test_lire_scan_cle_manquante(self):
+        for cle in ("id_faille", "paquet", "risque", "date"):
+            rapport = dict(RAPPORT_SCAN)
+            del rapport[cle]
+            with self.assertRaises(ValueError):
+                lire_scan(rapport, 9)
 
 
 if __name__ == "__main__":

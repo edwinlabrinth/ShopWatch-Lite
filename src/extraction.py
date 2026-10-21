@@ -22,6 +22,13 @@ GRAVITES_JOURNAL = {
     "WARNING": "MODERE",
 }
 
+# Risque du scan -> gravite du signal.
+GRAVITES_SCAN = {
+    "critique": "BLOQUANT",
+    "haut": "MAJEUR",
+    "moyen": "MODERE",
+}
+
 
 def masquer_donnees(texte: str) -> str:
     """Remplace la valeur des parametres sensibles par [MASQUE]."""
@@ -48,7 +55,24 @@ def lire_journal(ligne: str, numero: int, origine: str = "PAIEMENT",
 
 
 def lire_scan(rapport: dict, numero: int, env: str = "production") -> Signal:
-    raise NotImplementedError
+    """Transforme un rapport de scan en Signal."""
+    try:
+        id_faille = rapport["id_faille"]
+        paquet = rapport["paquet"]
+        risque = rapport["risque"]
+        date = rapport["date"]
+    except KeyError as erreur:
+        raise ValueError(f"cle manquante dans le rapport de scan : {erreur}") from erreur
+    return Signal(
+        ref=f"SH-{numero:04d}",
+        date=date,
+        origine="SCANNER",
+        service=paquet,
+        env=env,
+        categorie="FAILLE",
+        gravite=GRAVITES_SCAN.get(str(risque).lower(), "MINEUR"),
+        texte=f"Faille {id_faille} dans {paquet}",
+    )
 
 
 def lire_build(rapport: dict, numero: int, env: str = "production") -> Signal:
