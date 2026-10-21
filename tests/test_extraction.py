@@ -28,6 +28,10 @@ class TestExtraction(unittest.TestCase):
 
     def test_masquer_donnees_ignore_les_autres_noms(self):
         self.assertEqual(masquer_donnees("client=bob"), "client=bob")
+
+    def test_bearer(self):
+        self.assertEqual(masquer_donnees("Authorization: Bearer eyJ.abc-1"),
+                         "Authorization: Bearer [MASQUE]")
         self.assertEqual(masquer_donnees("discard=1"), "discard=1")
 
     def test_lire_journal(self):
