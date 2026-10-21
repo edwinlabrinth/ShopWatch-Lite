@@ -76,4 +76,21 @@ def lire_scan(rapport: dict, numero: int, env: str = "production") -> Signal:
 
 
 def lire_build(rapport: dict, numero: int, env: str = "production") -> Signal:
-    raise NotImplementedError
+    """Transforme un rapport de build en Signal."""
+    try:
+        etape = rapport["etape"]
+        resultat = rapport["resultat"]
+        date = rapport["date"]
+    except KeyError as erreur:
+        raise ValueError(f"cle manquante dans le rapport de build : {erreur}") from erreur
+    echec = str(resultat).lower() == "echec"
+    return Signal(
+        ref=f"SH-{numero:04d}",
+        date=date,
+        origine="BUILD",
+        service=etape,
+        env=env,
+        categorie="BUILD_ECHEC" if echec else "BUILD_OK",
+        gravite="MAJEUR" if echec else "MINEUR",
+        texte=f"Build {etape} : {resultat}",
+    )

@@ -1,10 +1,12 @@
 import unittest
 
-from src.extraction import lire_journal, lire_scan, masquer_donnees
+from src.extraction import lire_build, lire_journal, lire_scan, masquer_donnees
 
 LIGNE = "2026-11-27 17:02:11 paiement ERROR timeout passerelle apres 30s card=4970123412341234"
 RAPPORT_SCAN = {"id_faille": "CVE-2026-7788", "paquet": "lib-panier",
                 "risque": "critique", "date": "2026-11-27T17:09:00Z"}
+RAPPORT_BUILD = {"etape": "deploiement", "resultat": "echec",
+                 "date": "2026-11-27T17:08:00Z"}
 
 
 class TestExtraction(unittest.TestCase):
@@ -80,6 +82,31 @@ class TestExtraction(unittest.TestCase):
             del rapport[cle]
             with self.assertRaises(ValueError):
                 lire_scan(rapport, 9)
+
+    def test_lire_build(self):
+        sig = lire_build(RAPPORT_BUILD, 8)
+        self.assertEqual(sig.ref, "SH-0008")
+        self.assertEqual(sig.date, "2026-11-27T17:08:00Z")
+        self.assertEqual(sig.origine, "BUILD")
+        self.assertEqual(sig.service, "deploiement")
+        self.assertEqual(sig.env, "production")
+        self.assertEqual(sig.categorie, "BUILD_ECHEC")
+        self.assertEqual(sig.gravite, "MAJEUR")
+        self.assertEqual(sig.texte, "Build deploiement : echec")
+
+    def test_lire_build_reussite(self):
+        rapport = dict(RAPPORT_BUILD, etape="tests", resultat="succes")
+        sig = lire_build(rapport, 8)
+        self.assertEqual(sig.categorie, "BUILD_OK")
+        self.assertEqual(sig.gravite, "MINEUR")
+        self.assertEqual(sig.texte, "Build tests : succes")
+
+    def test_lire_build_cle_manquante(self):
+        for cle in ("etape", "resultat", "date"):
+            rapport = dict(RAPPORT_BUILD)
+            del rapport[cle]
+            with self.assertRaises(ValueError):
+                lire_build(rapport, 8)
 
 
 if __name__ == "__main__":
