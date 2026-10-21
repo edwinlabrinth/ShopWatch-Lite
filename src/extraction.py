@@ -13,6 +13,15 @@ RE_SENSIBLE = re.compile(
     re.IGNORECASE,
 )
 
+# Niveau du journal -> gravite du signal.
+GRAVITES_JOURNAL = {
+    "FATAL": "BLOQUANT",
+    "CRITICAL": "BLOQUANT",
+    "ERROR": "MAJEUR",
+    "WARN": "MODERE",
+    "WARNING": "MODERE",
+}
+
 
 def masquer_donnees(texte: str) -> str:
     """Remplace la valeur des parametres sensibles par [MASQUE]."""
@@ -21,7 +30,21 @@ def masquer_donnees(texte: str) -> str:
 
 def lire_journal(ligne: str, numero: int, origine: str = "PAIEMENT",
                  env: str = "production") -> Signal:
-    raise NotImplementedError
+    """Transforme une ligne de journal en Signal."""
+    champs = ligne.split(None, 4)
+    if len(champs) < 5:
+        raise ValueError("ligne de journal incomplete : 5 champs attendus")
+    date, heure, service, niveau, texte = champs
+    return Signal(
+        ref=f"SH-{numero:04d}",
+        date=f"{date}T{heure}Z",
+        origine=origine,
+        service=service,
+        env=env,
+        categorie="JOURNAL",
+        gravite=GRAVITES_JOURNAL.get(niveau.upper(), "MINEUR"),
+        texte=masquer_donnees(texte),
+    )
 
 
 def lire_scan(rapport: dict, numero: int, env: str = "production") -> Signal:
