@@ -12,7 +12,15 @@ def sig(categorie="JOURNAL", gravite="MAJEUR", texte="timeout passerelle apres 3
 
 
 class TestAnalyse(unittest.TestCase):
-    pass
+    def test_repete(self):
+        vus = set()
+        self.assertFalse(est_repete(sig(), vus))
+        self.assertTrue(est_repete(sig(), vus))
+
+    def test_repete_secondes_differentes(self):
+        vus = set()
+        self.assertFalse(est_repete(sig(date="2026-11-27T17:02:11Z"), vus))
+        self.assertFalse(est_repete(sig(date="2026-11-27T17:02:12Z"), vus))
 
 
 if __name__ == "__main__":
