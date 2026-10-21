@@ -24,7 +24,7 @@ class TestNotification(unittest.TestCase):
             choisir_canal("INCONNU")
 
 
-     def test_composer(self):
+    def test_composer(self):
         s, d = exemple()
         lignes = composer(s, d).split("\n")
         self.assertEqual(len(lignes), 5)
