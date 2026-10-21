@@ -13,6 +13,10 @@ RE_SENSIBLE = re.compile(
     re.IGNORECASE,
 )
 
+# En-tete d'API : "Authorization: Bearer <jeton>". Ce format n'est pas couvert par
+# RE_SENSIBLE (le nom du parametre est precede de "Bearer", pas suivi de "=" ou ":").
+RE_BEARER = re.compile(r"\b(Bearer)(\s+)(\S+)", re.IGNORECASE)
+
 # Niveau du journal -> gravite du signal.
 GRAVITES_JOURNAL = {
     "FATAL": "BLOQUANT",
@@ -32,7 +36,8 @@ GRAVITES_SCAN = {
 
 def masquer_donnees(texte: str) -> str:
     """Remplace la valeur des parametres sensibles par [MASQUE]."""
-    return RE_SENSIBLE.sub(r"\1\2" + MASQUE, texte)
+    texte = RE_SENSIBLE.sub(r"\1\2" + MASQUE, texte)
+    return RE_BEARER.sub(r"\1\2" + MASQUE, texte)
 
 
 def lire_journal(ligne: str, numero: int, origine: str = "PAIEMENT",
