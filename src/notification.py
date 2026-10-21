@@ -8,3 +8,10 @@ def composer(sig: Signal, diag: Diagnostic) -> str:
 
 def diffuser(sig: Signal, diag: Diagnostic, registre: list) -> Message:
     raise NotImplementedError
+
+def approuver(diag: Diagnostic, reponse: str) -> bool:
+    raise NotImplementedError
+
+def consigner(diag: Diagnostic, accord: bool, responsable: str,
+carnet: list, instant: str) -> dict:
+    raise NotImplementedError
