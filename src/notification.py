@@ -19,9 +19,9 @@ def choisir_canal(niveau: str) -> str:
 def composer(sig: Signal, diag: Diagnostic) -> str:
     lignes = [
         f"*** {diag.niveau} *** Service : {sig.service}",
-        f"Signal : {sig.ref}",
+        f"Constat : {sig.texte}",
         f"Cause : {diag.cause}",
-        f"Action recommandee : {diag.action}",
+        f"A faire : {diag.action}",
         f"Origines : {' + '.join(diag.origines)}",
     ]
 
@@ -30,12 +30,7 @@ def composer(sig: Signal, diag: Diagnostic) -> str:
 
 def diffuser(sig: Signal, diag: Diagnostic, registre: list) -> Message:
     canal = choisir_canal(diag.niveau)
-
-    destinataire = (
-        "astreinte-shop"
-        if diag.niveau == "BLOQUANT"
-        else "equipe-shop"
-    )
+    destinataire = "astreinte-shop"
 
     contenu = composer(sig, diag)
 
@@ -56,7 +51,7 @@ def approuver(diag: Diagnostic, reponse: str) -> bool:
     if not diag.critique:
         return True
 
-    return reponse.strip().upper() in ("OUI", "O")
+    return reponse.strip().upper() in ("O", "OUI", "OK", "YES")
 
 
 def consigner(
@@ -68,8 +63,6 @@ def consigner(
 ) -> dict:
     entree = {
         "ref": diag.signal_ref,
-        "niveau": diag.niveau,
-        "cause": diag.cause,
         "action": diag.action,
         "accord": accord,
         "responsable": responsable,
