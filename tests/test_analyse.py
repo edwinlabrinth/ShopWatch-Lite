@@ -57,6 +57,14 @@ class TestAnalyse(unittest.TestCase):
     def test_chercher_fiches_aucune(self):
         self.assertEqual(chercher_fiches(sig(texte="Service demarre"), FICHES), [])
 
+    def test_evaluer_panne_en_boucle(self):
+        s = sig()
+        self.assertEqual(evaluer(s, 4), "BLOQUANT")
+        self.assertEqual(evaluer(s, 3), "MAJEUR")
+
+    def test_evaluer_gravite_du_signal(self):
+        self.assertEqual(evaluer(sig(gravite="MINEUR")), "MINEUR")
+
 
 if __name__ == "__main__":
     unittest.main()

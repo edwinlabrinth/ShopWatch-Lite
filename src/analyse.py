@@ -22,7 +22,9 @@ def chercher_fiches(sig: Signal, base: dict) -> list:
 
 
 def evaluer(sig: Signal, nb_incidents: int = 0) -> str:
-    raise NotImplementedError
+    if nb_incidents >= 4:
+        return "BLOQUANT"
+    return sig.gravite
 
 
 def diagnostiquer(sig: Signal, base: dict, nb_incidents: int = 0) -> Diagnostic:
